@@ -18,6 +18,7 @@ package runtime
 
 import (
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -68,7 +69,12 @@ func (n *clientNegotiator) Decoder(contentType string, params map[string]string)
 }
 
 func (n *clientNegotiator) StreamDecoder(contentType string, params map[string]string) (Decoder, Serializer, Framer, error) {
+	fmt.Println(reflect.TypeOf(n.serializer))
 	mediaTypes := n.serializer.SupportedMediaTypes()
+	for _, m := range mediaTypes {
+		fmt.Printf("%+v\n", m)
+	}
+	fmt.Println(contentType)
 	info, ok := SerializerInfoForMediaType(mediaTypes, contentType)
 	if !ok {
 		if len(contentType) != 0 || len(mediaTypes) == 0 {
@@ -76,6 +82,7 @@ func (n *clientNegotiator) StreamDecoder(contentType string, params map[string]s
 		}
 		info = mediaTypes[0]
 	}
+	fmt.Println(info.StreamSerializer == nil)
 	if info.StreamSerializer == nil {
 		return nil, nil, nil, NegotiateError{ContentType: info.MediaType, Stream: true}
 	}
